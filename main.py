@@ -27,7 +27,7 @@ from torch.utils.data.sampler import WeightedRandomSampler
 import operator
 import cv2
 
-from models.model import*
+from model import*
 from data import process_df
 
 
