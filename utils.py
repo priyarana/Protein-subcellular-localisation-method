@@ -21,6 +21,194 @@ from tqdm import tqdm
 from datetime import datetime
 
 
+imageSize = 512
+       
+def NonLinR(ImNew):
+      theta1 = random.uniform(90,120) #0, 360)
+      theta = np.radians(theta1)
+      
+      c, s = np.cos(theta), np.sin(theta)
+      #R = np.array(((c, 0, s), (0, 1, 0), (-s,0,c))) #G
+      R = np.array(((1, 0, 0), (0, c, -s), (0,s,c))) #R
+      
+      D1_,D2_,D3_=[],[],[]
+      
+      for x in range(imageSize):
+          for y in range(imageSize):
+              vec = [ImNew[x,y,0],ImNew[x,y,1],ImNew[x,y,2]]
+              vctr = np.array(vec) 
+              RotMat = abs(R.dot(vctr))
+              D1_.append(RotMat[0])
+              D2_.append(RotMat[1])
+              D3_.append(RotMat[2])
+      
+      D1 = np.stack(D1_)
+      D2 = np.stack(D2_)
+      D3 = np.stack(D3_)
+      
+      images2 = np.zeros(shape=(imageSize*imageSize,3))
+      images2[:,0] = D1 
+      images2[:,1] = D2 
+      images2[:,2] = D3
+      
+      images2 = np.reshape(images2, (imageSize, imageSize,3))   
+      
+      images_ = np.zeros(shape=(512,512,4)) 
+      images_[:,:,0] = images2[:,:,0]
+      images_[:,:,1] = images2[:,:,1]
+      images_[:,:,2] = images2[:,:,2]
+      images_[:,:,3] = ImNew[:,:,3]
+      
+       
+      images_ = images_.astype(np.uint8)
+      
+      images_ = augumentor1(images_)
+      
+      images_ = T.Compose([T.ToPILImage(),T.ToTensor()])(images_)
+      return images_
+
+def NonLinG(ImNew):
+      theta1 = random.uniform(60, 110)
+      theta2 = random.uniform(120, 300)
+      theta = random.choice([theta1, theta2])	
+      
+      theta = np.radians(theta)
+      
+      c, s = np.cos(theta), np.sin(theta)
+      R = np.array(((c, 0, s), (0, 1, 0), (-s,0,c))) #G
+      #R = np.array(((1, 0, 0), (0, c, -s), (0,s,c))) #R
+      
+      D1_,D2_,D3_=[],[],[]
+      
+      for x in range(imageSize):
+          for y in range(imageSize):
+              vec = [ImNew[x,y,0],ImNew[x,y,1],ImNew[x,y,2]]
+              vctr = np.array(vec) 
+              RotMat = abs(R.dot(vctr))
+              D1_.append(RotMat[0])
+              D2_.append(RotMat[1])
+              D3_.append(RotMat[2])
+      
+      D1 = np.stack(D1_)
+      D2 = np.stack(D2_)
+      D3 = np.stack(D3_)
+      
+      images2 = np.zeros(shape=(imageSize*imageSize,3))
+      images2[:,0] = D1 
+      images2[:,1] = D2 
+      images2[:,2] = D3
+      
+      images2 = np.reshape(images2, (imageSize, imageSize,3))   
+      
+      images_ = np.zeros(shape=(512,512,4)) 
+      images_[:,:,0] = images2[:,:,0]
+      images_[:,:,1] = images2[:,:,1]
+      images_[:,:,2] = images2[:,:,2]
+      images_[:,:,3] = ImNew[:,:,3]
+      
+       
+      images_ = images_.astype(np.uint8)
+      
+      images_ = augumentor1(images_)
+      
+      images_ = T.Compose([T.ToPILImage(),T.ToTensor()])(images_)
+      return images_
+            
+def augumentor1(image):   # all these augmentations have been applied in random order 
+      flip_aug = iaa.Sequential([
+              iaa.OneOf([
+                  iaa.Affine(rotate=90),
+                  iaa.Affine(rotate=180),
+                  iaa.Affine(rotate=270),
+                  iaa.Affine(shear=(-16, 16)),
+                  iaa.Fliplr(0.5),
+                  iaa.Flipud(0.5),
+              ])
+          ], random_order=True)
+    
+      crop_aug = iaa.Sometimes(
+                  0.5,
+                  iaa.Sequential([
+                      iaa.OneOf([
+                          iaa.CropToFixedSize(288, 288),
+                          iaa.CropToFixedSize(320, 320),
+                          iaa.CropToFixedSize(352, 352),
+                          iaa.CropToFixedSize(384, 384),
+                          iaa.CropToFixedSize(416, 416),
+                          iaa.CropToFixedSize(448, 448),
+                      ])
+                  ])
+              )
+      #pad_aug = iaa.PadToFixedSize(width=512, height=512)
+
+      mul_aug = iaa.Sometimes(0.5, iaa.Multiply((0.5, 1.5), per_channel=0.5)) 
+          
+      aug = iaa.Sequential([flip_aug, crop_aug, mul_aug])
+      image_aug = aug.augment_image(image)   
+      
+      image_aug =  cv2.resize(image_aug,(config.img_weight,config.img_height))
+      
+      image_aug = T.Compose([T.ToPILImage(),T.ToTensor()])(image_aug)
+        
+      return image_aug
+    
+       
+def findInd(label):  # Find Image2 from TRAINING set with same label
+
+    label10 = np.load('LabelInd10.npy')
+    label15 = np.load('LabelInd15.npy')
+    label27 = np.load('LabelInd27.npy')
+    label8 = np.load('LabelInd8.npy')
+    label9 = np.load('LabelInd9.npy')
+    
+    label6 = np.load('LabelInd6.npy')
+    label20 = np.load('LabelInd20.npy')
+    label12 = np.load('LabelInd12.npy')
+    label13 = np.load('LabelInd13.npy')
+    label17 = np.load('LabelInd17.npy')
+    
+    label16 = np.load('LabelInd16.npy')
+    label18 = np.load('LabelInd18.npy') 
+    label22 = np.load('LabelInd22.npy')
+    label24 = np.load('LabelInd24.npy')
+    label26 = np.load('LabelInd26.npy') 
+    
+    
+    if label == 10:
+        ind2List = label10
+    if label == 15:
+        ind2List = label15
+    if label == 27:
+        ind2List = label27
+    if label == 8:
+        ind2List = label8
+    if label == 9:
+        ind2List = label9
+        
+    if label == 6:
+        ind2List = label6
+    if label == 20:
+        ind2List = label20
+    if label == 12:
+        ind2List = label12
+    if label == 13:
+        ind2List = label13
+    if label == 17:
+        ind2List = label17
+        
+    if label == 16:
+        ind2List = label16
+    if label == 18:
+        ind2List = label18
+    if label == 22:
+        ind2List = label22
+    if label == 24:
+        ind2List = label24
+    if label == 26:
+        ind2List = label26
+           
+    return ind2List
+
 def per_image_standardization(x):
     y = x.view(-1, x.shape[1]*x.shape[2]*x.shape[3])
     mean = y.mean(dim=1, keepdim = True).expand_as(y)    
