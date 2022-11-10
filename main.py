@@ -258,11 +258,7 @@ def evaluate(val_loader,model,criterion,epoch,train_loss,best_results,start):
         
         loss = criterion(total_output, total_target)
         losses.update(loss.item(),images_var.size(0))
-        
-        
-        f1List=[]
-        f1ListAll = []
-        
+
         cc = total_output.sigmoid().cpu().data.numpy()
         
         #np.save('Res20',cc)         #--------------------------------->>
@@ -270,16 +266,8 @@ def evaluate(val_loader,model,criterion,epoch,train_loss,best_results,start):
         
         f1_ = f1_score(total_target.cpu(), total_output.sigmoid().cpu().data.numpy() > 0.50, average='macro')
         f1_All = f1_score(total_target.cpu(), total_output.sigmoid().cpu().data.numpy() > 0.50,  average=None)
-        
-        f1List.append(f1_)
-        f1ListAll.append(f1_All)
-            
-        index_, f1_batch = max(enumerate(f1List), key=operator.itemgetter(1))  
-        print('f1_batch',f1_batch)
-        print('f1_listAll',f1ListAll[index_])
-
-        
-        f1.update(f1_batch,images_var.size(0))
+   
+        f1.update(f1_,images_var.size(0))
         print('\r',end='',flush=True)
         message = '%s   %5.1f %6.1f         |         %0.3f           |         %0.3f  %0.4f         |         %s  %s    | %s' % (\
                     "val", i/len(val_loader) + epoch, epoch,                    
@@ -321,21 +309,13 @@ def test(test_loader,model,criterion,epoch,flag):
         loss = criterion(total_output, total_target)
         losses.update(loss.item(),images_var.size(0))
         
-        
-        f1List=[]
-        f1ListAll = []
-        
         cc = total_output.sigmoid().cpu().data.numpy()
         
         f1_ = f1_score(total_target.cpu(), total_output.sigmoid().cpu().data.numpy() > 0.50, average='macro')
         f1_All = f1_score(total_target.cpu(), total_output.sigmoid().cpu().data.numpy() > 0.50,  average=None)
-        
-        f1List.append(f1_)
-        f1ListAll.append(f1_All)
-            
-        index_, f1_batch = max(enumerate(f1List), key=operator.itemgetter(1))  
-        print('f1_batch of Test set',f1_batch)
-        print('f1_listAll of Test set',f1ListAll[index_])
+
+        print('f1_batch of Test set',f1_)
+        print('f1_listAll of Test set',f1_All)
 
      
 def save_checkpoint(state, is_best_loss,is_best_f1,fold,model,test_loader,criterion):
@@ -417,7 +397,7 @@ def main():
                 LabelInd_.append(ind)
         LabelInd = np.stack(LabelInd_)
         np.save('/LabelInd'+ minLb,LabelInd)
-        print('shape',LabelInd.shape)
+        print('shape',LabelInd.shape)  #saving indices of samples in the training set for each minority/medium label
 
     train_gen = HumanDataset(train_data_list,augument=True,mode="train") 
     train_loader = DataLoader(train_gen,batch_size=config.batch_size,drop_last=True,pin_memory=True,num_workers=4)
@@ -430,12 +410,6 @@ def main():
 
     scheduler = lr_scheduler.StepLR(optimizer,step_size=15,gamma=0.05)
     #scheduler = lr_scheduler.StepLR(optimizer,step_size=30,gamma=0.1)
-    
-    ckp_path = "/g/data/nk53/pr2894/PSL/Code/1/checkpoints/best_models/bninception_bcelog_fold_33_model_best_f1.pth.tar"
-    model, optimizer, start_epoch, load_loss = load_ckp(ckp_path, model, optimizer)
-    best_results = [load_loss,0.713393]
-    print('load_loss', load_loss)
-    start_epoch = 35
     
     start = timer()
 
