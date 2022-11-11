@@ -378,28 +378,6 @@ class Logger(object):
         # you might want to specify some extra behavior here.
         pass
 
-# class FocalLoss(nn.Module):
-#     def __init__(self, alpha=0.25,gamma=2):
-#         super(FocalLoss, self).__init__()
-#         self.alpha = alpha
-#         self.gamma = gamma
-
-#     def forward(self, x, y):
-#         '''Focal loss.
-#         Args:
-#           x: (tensor) sized [N,D].
-#           y: (tensor) sized [N,].
-#         Return:
-#           (tensor) focal loss.
-#         '''
-#         t = Variable(y).cuda()  # [N,20]
-
-#         p = x.sigmoid()
-#         pt = p*t + (1-p)*(1-t)         # pt = p if t > 0 else 1-p
-#         w = self.alpha*t + (1-self.alpha)*(1-t)  # w = alpha if t > 0 else 1-alpha
-#         w = w.detach() * (1-pt).pow(self.gamma)
-#         return F.binary_cross_entropy_with_logits(x, t, w.detach(), size_average=False)
-    
     
 class FocalLoss(nn.Module):
     def __init__(self, gamma=2):
@@ -457,7 +435,7 @@ class FocalLoss(nn.Module):
         l = logits.reshape(-1)
         t = targets.reshape(-1)
         p = torch.sigmoid(l)
-        p = torch.where(t >= 0.5, p, 1-p)
+        p = torch.where(t >= 0.5, p, 1-p)  # try smalled threshold 0.2
         logp = - torch.log(torch.clamp(p, 1e-4, 1-1e-4))
         loss = logp*((1-p)**self.gamma)
         loss = 28*loss.mean()
