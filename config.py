@@ -1,11 +1,11 @@
 class DefaultConfigs(object):
-    train_data = "path to training images"
+    train_data = "path to training images" 
     
-    #test_data = "D:/DATAs/Kaggle512/test/"   # your test data
+    #test_data = "path to training images (TS2)"   # your test data
     weights = "/checkpoints/"
-    best_models = "/checkpoints/best_models/"
+    best_models = "/checkpoints/best_models/"  
     submit = "/submit/"
-    model_name = "modelName"
+    model_name = "TrainedModel"
     num_classes = 28
     img_weight = 512
     img_height = 512
