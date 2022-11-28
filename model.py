@@ -9,6 +9,7 @@ from collections import OrderedDict
 import torch.nn.functional as F
 import torch
 import random
+import pretrainedmodels
 from utils import mixup_data
 from utils import per_image_standardization
 import os
@@ -28,7 +29,6 @@ def get_net():
                 nn.Linear(1024, config.num_classes)
             )
     return model
-
 
 def get_resnet34(num_classes=28, **_):
     model_name = 'resnet34'
@@ -50,10 +50,6 @@ def get_resnet34(num_classes=28, **_):
                 nn.Dropout(0.5),
                 nn.Linear(512, 28))
     return model
-
-
-import pretrainedmodels
-#print(pretrainedmodels.model_names)
 
 def get_SEResNext50(num_classes=28, **_):
     model_name = 'se_resnext50_32x4d'   #se_resnext50_32x4d(num_classes=1000, pretrained='imagenet')
@@ -106,9 +102,6 @@ def get_resnet50(num_classes=28, **_):
                 nn.Linear(2048, 28))
     return model
     
-    
-    
-
 class SEResNeXtUnit(nn.Module):
     """
     SE-ResNeXt unit.
@@ -310,9 +303,7 @@ def seresnext50_32x4d(**kwargs):
     """
     return get_seresnext(blocks=50, cardinality=32, bottleneck_width=4, model_name="seresnext50_32x4d", **kwargs)
 
-       
-
-
+      
 class CustomResNet(nn.Module):
     def __init__(self, model):
         super(CustomResNet, self).__init__()
