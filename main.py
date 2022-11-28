@@ -161,16 +161,14 @@ def train(train_loader,model,criterion,optimizer,epoch,valid_loss,best_results,s
                
                 kt = random.randint(0, 1) #
 
-                if kt == 0:
-
                     
-                    WeakAug = NonLinG(WeakAug)
-                    Weaks = WeakAug.cuda(non_blocking=True)
-                    Weaks = Weaks[None, :, :]                            
-                else:
-                    WeakAug = NonLinR(WeakAug)
-                    Weaks = WeakAug.cuda(non_blocking=True)
-                    Weaks = Weaks[None, :, :]                            
+                WeakAug = NonLinG(WeakAug)
+                WeaksG = WeakAug.cuda(non_blocking=True)
+                WeaksG = WeaksG[None, :, :]  
+                          
+                WeakAug = NonLinR(WeakAug)
+                WeaksR = WeakAug.cuda(non_blocking=True)
+                WeaksR = WeaksR[None, :, :]                            
                 
                 Im1 = augumentor1(Im1)
                 
@@ -196,11 +194,11 @@ def train(train_loader,model,criterion,optimizer,epoch,valid_loss,best_results,s
                 Im2 = Im2[None, :, :]
                     
                 if ct==0:
-                    Min_input =  torch.cat((Im1, Im2, Weaks),0).cuda(non_blocking=True)
-                    Min_target = torch.cat((labIm1_, labIm2_, MixLabel),0)
+                    Min_input =  torch.cat((Im1, WeaksR, WeaksG),0).cuda(non_blocking=True)
+                    Min_target = torch.cat((labIm1_, MixLabel, MixLabel),0)
                 else:
-                    Min_input = torch.cat((Min_input, Im1, Im2, Weaks),0).cuda(non_blocking=True) 
-                    Min_target = torch.cat((Min_target, labIm1_, labIm2_, MixLabel),0)
+                    Min_input = torch.cat((Min_input, Im1, WeaksR, WeaksG),0).cuda(non_blocking=True) 
+                    Min_target = torch.cat((Min_target, MixLabel, labIm2_, MixLabel),0)
         elif kt2 == 2:
           LlabListMed = [20,17,24,26,16]
           Min_input,Min_target = MediumComp(LlabListMed,train_gen)
