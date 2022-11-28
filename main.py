@@ -159,9 +159,6 @@ def train(train_loader,model,criterion,optimizer,epoch,valid_loss,best_results,s
                 
                 WeakAug = MultiMixUp(Im1Ind,Im2Ind,train_gen)  
                
-                kt = random.randint(0, 1) #
-
-                    
                 WeakAug = NonLinG(WeakAug)
                 WeaksG = WeakAug.cuda(non_blocking=True)
                 WeaksG = WeaksG[None, :, :]  
@@ -198,7 +195,7 @@ def train(train_loader,model,criterion,optimizer,epoch,valid_loss,best_results,s
                     Min_target = torch.cat((labIm1_, MixLabel, MixLabel),0)
                 else:
                     Min_input = torch.cat((Min_input, Im1, WeaksR, WeaksG),0).cuda(non_blocking=True) 
-                    Min_target = torch.cat((Min_target, MixLabel, labIm2_, MixLabel),0)
+                    Min_target = torch.cat((Min_target, labIm1_, MixLabel, MixLabel),0)
         elif kt2 == 2:
           LlabListMed = [20,17,24,26,16]
           Min_input,Min_target = MediumComp(LlabListMed,train_gen)
