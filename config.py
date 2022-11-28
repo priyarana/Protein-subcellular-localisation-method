@@ -1,7 +1,7 @@
 class DefaultConfigs(object):
     train_data = "path to training images" 
     
-    #test_data = "path to training images (TS2)"   # your test data
+    #test_data = "path to Kaggle test images (TS2)"   # your test data
     weights = "/checkpoints/"
     best_models = "/checkpoints/best_models/"  
     submit = "/submit/"
